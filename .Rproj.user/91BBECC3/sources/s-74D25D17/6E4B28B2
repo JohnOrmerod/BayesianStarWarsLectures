@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1604199533046.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "997023135",
+    "id" : "6E4B28B2",
+    "lastKnownWriteTime" : 1604366704,
+    "last_content_update" : 1604366704015,
+    "path" : "C:/Users/jormerod/Desktop/STAT3888/Lectures/L19_IntroductionToBayesianInference/L19_IntroductionToBayesianInference.Rmd",
+    "project_path" : "L19_IntroductionToBayesianInference.Rmd",
+    "properties" : {
+        "cursorPosition" : "1865,47",
+        "scrollLine" : "1859"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

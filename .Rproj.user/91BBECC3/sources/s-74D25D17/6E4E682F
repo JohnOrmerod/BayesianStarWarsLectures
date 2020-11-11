@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1604199885406.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "6E4E682F",
+    "lastKnownWriteTime" : 1571791005,
+    "last_content_update" : 1571791005,
+    "path" : "C:/Users/jormerod/Desktop/STAT3888/2019/Lectures/L21_Bayesian_hypothesis_testing/L21_Bayesian_hypothesis_testing.Rmd",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "332,34",
+        "scrollLine" : "322"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

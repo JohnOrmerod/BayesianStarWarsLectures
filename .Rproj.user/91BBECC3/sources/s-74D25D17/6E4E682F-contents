@@ -1,0 +1,1430 @@
+---
+title: "STAT3888: Statistical Machine Learning"
+subtitle: "Bayesian Hypothesis Testing"
+author: "John Ormerod"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  xaringan::moon_reader:
+    css: ["default", "assets/sydney-fonts.css", "assets/sydney.css"]
+    self_contained: true # if true, fonts will be stored locally
+    seal: true # show a title slide with YAML information
+    includes:
+      in_header: ["assets/mathjax-config.html"]
+    header-includes:
+      - \usepackage{color}
+    nature:
+      beforeInit: ["assets/remark-zoom.js", "./assets/widgets.js"]
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: '16:9' # alternatives '16:9' or '4:3' or others e.g. 13:9
+      navigation:
+        scroll: false # disable slide transitions by scrolling
+---
+
+
+```{r Lec1, echo=FALSE, warning=FALSE, message=FALSE, cache=FALSE}
+#source("../assets/lec_first_chunk.R")
+
+library(rmarkdown)
+library(knitr)
+
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(here))
+
+suppressPackageStartupMessages(library(rethinking))
+
+options(digits = 6)
+ 
+set.seed(1)
+```
+
+$$
+\require{color}
+\definecolor{prior}{RGB}{248,118,109}
+\definecolor{like}{RGB}{0,186,56}
+\definecolor{post}{RGB}{97,156,255}
+\definecolor{margin}{RGB}{199,124,255}
+$$
+
+### Outline
+
+.pull-left-2[
+In the following lectures we will move progressively from familiar ideas, i.e., applying
+Bayes rule to more complicated ideas.
+
++ Big picture look at Bayesian hypothesis testing.
+
++ Applying Bayes theorem.
+
++ Updating the conditional probability -  Bayesian learning.
+
++ Bayesian hypothesis testing (using a standard example)
+
++ Bayesian hypothesis testing (using a non-standard example)
+
+Characters from Harry Potter will be our guide.
+
+
+]
+
+.pull-right-1[
+<center>
+<img src="images/Harry.gif" style="width:100%">
+</center>
+]
+
+(Note:  These slides were adapted using the examples from "Introduction to Bayesian Inference for Psychology" by Alexander Etz and Joachim Vandekerckhove, Psychonomic Bulletin and Review (2018) 25:5-34).
+
+
+
+
+---
+
+### What is Bayesian inference?
+
+In the last lecture we introduced (or revised) two rules, the
+product and
+sum rules
+
++ Product rule:
+
+$$P(A,B) = P(B)P(A|B) = P(A)P(B|A)$$
+
++ Sum Rule: If $-A$ is the negation of $A$ then
+
+$$P(B) = P(A,B) + P(-A,B)$$
+
+Bayesian inference is the application of the product and
+sum rules to real problems of inference Applications of
+Bayesian inference are creative ways of looking at a problem
+through the lens of these two rules. 
+
+<!-- The rules form the basis of a mature philosophy of scientific learning proposed -->
+<!-- by Dorothy Wrinch and Sir Harold Jeffreys (Jeffreys, 1961, -->
+<!-- 1973; Wrinch and Jeffreys, 1921; see also Ly et al., 2016). -->
+
+Together, the two rules allow us to calculate probabilities
+and perform scientific inference in an incredible variety of
+circumstances. We begin by illustrating one combination of
+the two rules that is especially useful for scientific inference:
+Bayesian hypothesis testing.
+
+
+---
+
+### Bayes Rule
+
+Call event 
+
++ $M$ (the truth of) an hypothesis that a researcher
+holds and 
+
++ call $-M$ a competing hypothesis. 
+
+Together these can form a disjoint set:  $\{ M, -M \}.$
+
+<!-- The set $\{ \mathcal{M}, -\mathcal{M} \}$ is -->
+<!-- necessarily disjoint if $-\mathcal{M}$ is simply the denial of $\mathcal{M}$,  -->
+
+Let $X$ represent the data. We will build towards testing
+
+$$H_0 \colon X \ \mbox{ arises from hypothesis } \ M$$
+
+versus
+
+$$H_1 \colon X \ \mbox{ arises from hypothesis } \ -M$$
+
+
+In practice the set of hypotheses can contain any number
+of models spanning a wide range of theoretical accounts.
+In such a scenario, it is important to keep in mind that
+**we cannot make inferential statements about any model not
+included in the set**.
+
+
+---
+
+### Bayes Rule
+
+
+
+Before any data are collected, the researcher has some
+level of prior belief in these competing hypotheses, which
+manifest as **prior probabilities for each model** denoted 
+
+$$P(M) \qquad \mbox{and} \qquad P(-M)$$
+This is a departure from classical hypothesis testing where $H_0$ and $H_1$ have equal footing,
+rather than gathering evidence to show $H_0$ is false.
+
+The hypotheses are well-defined if they make a specific prediction about the probability of each experimental outcome $X$ through the likelihood functions 
+
+$$P(X|M) \qquad \mbox{and} \qquad P(X|-M).$$ 
+
+Likelihoods can be thought of as how strongly the data $X$ are implied by an hypothesis. 
+
+Conditional on the truth of an hypothesis,likelihood functions specify the probability of a given outcome and are 
+usually easiest to interpret in relation to other hypotheses' likelihoods.
+
+---
+
+### Bayes Rule
+
+
+Of interest, of course, is the probability that $M$ is true, given the data $X$, or 
+$P(M|X)$. The joint distribution is $P(M,X) = P(X)P(M|X)$
+we can derive that
+
+$$P(M|X) = \frac{P(M,X)}{P(X)}.$$
+
+or equivalently $P(M,X) = P(M)P (X|M)$
+and from which we can derive the posterior probability for model $M$:
+
+
+$$P(M|X) = \frac{P(M)P(X|M)}{P(X)}.$$
+Similarly, the posterior probability of $-M$ being true is:
+
+$$P(-M|X) = \frac{P(-M)P(X|-M)}{P(X)}.$$
+---
+
+### The prior predictive probability P(X)
+
+ 
+Many of the quantities in 
+
+$$P(M|X) = \frac{P(M)P(X|M)}{P(X)}$$
+
+we know: we must have 
+
+1. some prior probability (belief or prior information) that the hypothesis is true if we are even considering the hypothesis at all, and 
+
+2. if the hypothesis is well-described it will attach a particular probability to the observed data. 
+
+What remains is the denominator: the prior predictive probability
+$P(X)$ - the probability of observing a given outcome in the
+experiment, which can be thought of as the average probability
+of the outcome implied by the hypotheses, weighted
+by the prior probability of each hypothesis. 
+
+---
+
+### The prior predictive probability P(X)
+
+The value $P(X)$ can be
+obtained through the sum rule by adding the probabilities of
+the joint events $P(X,M)$ and $P(X,-M)$, i.e.,
+
+\begin{align}
+P(X) 
+& = P(X,M) + P(X,-M) \\
+& = P(M)P (X|M) + P(-M)P (X|-M)
+\end{align}
+
+which amounts to adding up the right-hand side numerator
+of Bayes Rule for all competing hypotheses, giving a
+weighted-average probability of observing the outcome $X$.
+Hence,
+
+$$P(M|X) = \frac{P(M)P (X|M)}{P(M)P (X|M) + P(-M)P (X|-M)}$$
+and
+
+$$P(-M|X) = 1- P(M|X)$$
+
+
+---
+
+### The prior predictive probability P(X)
+
+Now if we generalise to $K$ hypotheses then
+
+$$P(X) = \sum_{k=1}^K  P(M_k)P (X|M_k)$$
+
+and the posterior probability for model $M_i$ is
+
+$$P(M_i|X) = \frac{P(M_i)P(X|M_i)}{\sum_{k=1}^K  P(M_k)P (X|M_k)}$$
+
+for the case where we are considering $K$ competing and
+mutually-exclusive hypotheses (i.e., hypotheses that form a
+disjoint set), one of which is $M_i$.
+
+ 
+
+<!-- ### Quantifying evidence -->
+
+<!-- Now that we have, in one equation, factors that correspond -->
+<!-- to our knowledge before — $P(M)$ — and after — $P(M|X)$ — -->
+<!-- seeing the data, we can address a slightly alternative question: -->
+<!-- How much did we learn due to the data X? Consider -->
+<!-- that every quantity in  -->
+
+<!-- $$P(M_i|X) = \frac{P(M_i)P(X|M_i)}{\sum_{k=1}^K  P(M_k)P (X|M_k)}$$ -->
+
+<!-- is either a prior belief in an hypothesis, or the probability that the data would occur -->
+<!-- under a certain hypothesis—all known quantities. If we -->
+<!-- divide both sides of the above by $P(M_i)$ we get -->
+
+<!-- $$\frac{P(M_i|X)}{P(M_i)} = \frac{ P(X|M_i)}{\sum_{k=1}^K  P(M_k)P (X|M_k)}$$ -->
+
+<!-- we see that after observing outcome X, the ratio of an -->
+<!-- hypothesis’s posterior probability to its prior probability is -->
+<!-- larger than 1 (i.e., its probability goes up) if the probability it -->
+<!-- attaches to the observed outcome is greater than a weightedaverage -->
+<!-- of all such probabilities—averaged across all candidate -->
+<!-- hypotheses, using the respective prior probabilities as -->
+<!-- weights. -->
+
+---
+
+### Quantifying evidence
+
+If we are concerned with only two hypotheses, a particularly
+interesting application of Bayes Rule becomes
+possible. After collecting data we are left with the posterior
+probability of two hypotheses, $P(M|X)$ and $P(-M|X)$.
+
+If we form a ratio of these probabilities we can quantify
+our relative belief in one hypothesis vis-a-vis the other, or
+what is known as the posterior odds: 
+
+$$\frac{P(M|X)}{P(-M|X)}$$
+
+If $P(M|X) = 0.75$ and $P(-M|X) = 0.25$, the posterior
+odds are $0.75/0.25 = 3$, or 3:1 (“three to one”) in favor of $M$
+over $-M$. 
+
+---
+
+### Quantifying evidence
+
+Since the posterior probability of an hypothesis
+is equal to the fraction in the right-hand side of 
+
+
+$$P(M|X) = \frac{P(M)P (X|M)}{P(M)P (X|M) + P(-M)P (X|-M)}$$
+
+we can calculate the posterior odds as a ratio of two right-hand
+sides of Bayes Rule as follows:
+
+$$\frac{P(M|X)}{P(-M|X)} = \frac{\displaystyle \frac{P(M)P (X|M)}{P(M)P (X|M) + P(-M)P (X|-M)}}{\displaystyle \frac{P(-M)P (X|-M)}{P(M)P (X|M) + P(-M)P (X|-M)}}$$
+After simplifying and grouping terms
+
+$$\underbrace{\frac{P(M|X)}{P(-M|X)}}_{\mbox{Posterior odds}} = \underbrace{\frac{P(M)}{P(-M)}}_{\mbox{Prior odds}} \times  \underbrace{\frac{P(X|M)}{P(X|-M)}}_{\mbox{Bayes factor}}$$
+---
+
+### Quantifying evidence
+
+From the last slide
+
+$$\underbrace{\frac{P(M|X)}{P(-M|X)}}_{\mbox{Posterior odds}} = \underbrace{\frac{P(M)}{P(-M)}}_{\mbox{Prior odds}} \times  \underbrace{\frac{P(X|M)}{P(X|-M)}}_{\mbox{Bayes factor}}$$
+
+Then:
+
++ The posterior odds is the odds of model $M$, i.e. the odds of model $M$ given data $X$.
+
++ The prior odds is the odds of model $M$ before we collect the data. 
+
++ Bayes factor—can be interpreted as the extent to which the data sway our relative belief from one hypothesis to the other, which is determined by comparing
+the hypotheses’ abilities to predict the observed data. 
+
+If the data are more probable under $M$ than under $-M$ (i.e., if
+$P(X|M)$ is larger than $P(X|-M)$) then $M$ does the better
+job predicting the data, and the posterior odds will favour $M$
+more strongly than the prior odds.
+
+ 
+---
+
+class: segue
+
+
+.white[
+
+# Example 1: "The happy herbologist" 
+
+# (Applying Bayes rule)
+
+]
+
+
+---
+
+.pull-left[
+
+### Example 1: "The happy herbologist" 
+
+
+At Hogwarts School of Witchcraft and Wizardry, Professor Pomona
+Sprout leads the Herbology Department.
+
+<center>
+<img src="images/Sprout.gif" style="width:60%">
+</center>
+<br>
+<center>
+Professor Pomona Sprout
+</center>
+
+
+
+
+
+]
+
+.pull-right[
+
+In the Department’s greenhouses, she cultivates crops of a
+magical plant called green codacle—a flowering plant that
+when consumed causes a witch or wizard to feel euphoric
+and relaxed. 
+
+
+Professor Sybill Trelawney, the professor of Divination, is an avid 
+user of green codacle and frequently visits Professor Sprout’s 
+laboratory to sample the latest harvest.
+
+<center>
+<img src="images/ProfessorTrelawney.gif" style="width:100%">
+</center>
+<br>
+
+<center>
+Professor Sybill Trelawney
+</center>
+
+
+]
+
+---
+
+### Example 1: "The happy herbologist" 
+
+.pull-left[
+However, it has turned out that one in a thousand codacle
+plants is afflicted with a mutation that changes its effects.
+
+Consuming those rare plants causes unpleasant side effects
+such as 
+
++ paranoia, 
+
++ anxiety, and 
+
++ spontaneous levitation. 
+
+In order to evaluate the quality of her crops, Professor Sprout
+has developed a mutation-detecting spell. 
+
+
+
+
+
+
+
+
+
+]
+
+.pull-right[
+
+<center>
+<img src="images/Levitation.gif" style="width:150%">
+</center>
+
+
+]
+
+
+---
+
+### Example 1: "The happy herbologist" 
+
+.pull-left[
+
+**The new spell has a 99% chance to accurately detect an existing mutation, but
+also has a 2% chance to falsely indicate that a healthy plant
+is a mutant.**
+
+When Professor Sprout presents her results at a
+School colloquium, Trelawney asks two questions: 
+
++ What is the probability that a codacle plant is a mutant, when your spell says that it is? 
+
++ And what is the probability the plant is a mutant, when your spell says that it is healthy? 
+
+Trelawney’s interest is in knowing how much trust to put into Professor Sprout’s spell.
+
+]
+
+.pull-right[
+
+<center>
+<img src="images/Professor.PNG" style="width:150%">
+</center>
+
+
+]
+
+---
+
+### Example 1: "The happy herbologist" 
+
+
+Call the event 
+
++ that a specific plant is a mutant $M$; and
+
++ that it is healthy $-M$. 
+
+Call the event 
+
++ that Professor Sprout’s spell diagnoses a plant as a mutant  $D$; and 
+
++ that it diagnoses it healthy $-D$. 
+
+Professor Trelawney’s interest is in: 
+
++ the probability that the plant is indeed a mutant given that
+it has been diagnosed as a mutant, or $P(M|D)$; and 
+
++ the probability the plant is a mutant given it has been diagnosed healthy, or $P(M|-D)$. 
+
+---
+
+### Example 1: "The happy herbologist" 
+
+Professor Trelawney, who is an accomplished statistician, has all the relevant information
+to apply Bayes' Rule to find these probabilities.
+
++ She knows the prior probability that a plant is a
+mutant is $P(M) = .001$, and thus the prior probability that
+a plant is not a mutant is $P(-M) = 1 − P(M) = 0.999$.
+
++ The probability of a correct mutant diagnosis given the plant
+is a mutant is $P(D|M) = 0.99$, and the probability of an
+erroneous healthy diagnosis given the plant is a mutant is
+thus $P(-D|M) = 1 − P(D|M) = 0.01$. 
+
++ When the plant is healthy, the spell incorrectly diagnoses it as a mutant
+with probability $P(D|-M) = 0.02$, and correctly diagnoses
+the plant as healthy with probability 
+$P(-D|-M) = 1 − P(D|-M) = 0.98$.
+
+---
+
+### Example 1: "The happy herbologist" 
+
+.pull-left[
+From the previous slide we had
+
+$$P(M) = .001, \qquad P(-M) = 1 − P(M) = 0.999,$$
+
+
+$$P(D|M) = 0.99, \qquad P(-D|M) = 1 − P(D|M) = 0.01$$
+
+$$P(D|-M) = 0.02, \qquad \mbox{and}$$
+$$P(-D|-M) = 1 − P(D|-M) = 0.98$$
+
+When Professor Sprout’s spell gives a mutant diagnosis,
+the posterior probability that the plant is really a mutant is
+given by Bayes’ Rule:
+
+\begin{align}
+P(M|D) 
+& = \frac{P(M)P(D|M)}{P(M)P(D|M) + P(-M)P(D|-M)} \\
+& = \frac{.001 \times .99}{.001 \times .99 + .999 \times .02} \approx 0.047
+\end{align}
+
+]
+
+.pull-right[
+
+<center>
+<img src="images/Tree1.PNG" style="width:150%">
+</center>
+]
+ 
+
+---
+
+### Example 1: "The happy herbologist" 
+
+.pull-left[
+
+
+A mutant diagnosis from Professor Sprout’s spell raises
+the probability the plant is a mutant from .001 to roughly .047. 
+
+
+This means that when a plant is diagnosed as a
+mutant, the posterior probability the plant is not a mutant is
+
+$$P(¬M|D) \approx 1 − .047 = .953$$ 
+
+
+]
+
+.pull-right[
+
+<center>
+<img src="images/Tree1.PNG" style="width:150%">
+</center>
+]
+
+
+The low prior probability
+that a plant is a mutant means that, even with the spell having
+99% accuracy to correctly diagnose a mutant plant as
+such, a plant diagnosed as a mutant is still probably safe to
+eat—nevertheless, Professor Trelawney will think twice.
+Analogous calculations show that the posterior probability
+that a plant is a dangerous mutant, given it is diagnosed
+as healthy, is:
+
+$$P(M|-D) = \frac{.001 × .01}{.001 × .01 + .999 × .98} \approx .000010$$
+ 
+---
+
+class: segue
+
+
+.white[
+
+# Example 2: "The happy herbologist" continued.
+
+# (Bayesian learning)
+
+]
+
+
+---
+
+
+### Example 2: "The happy herbologist" continued
+
+.pull-left[ 
+
+A major advantage of using Bayes’ Rule in this way
+is that it gracefully extends to more complex scenarios.
+
+
+Suppose, that Trelawney knows that
+Professor Sprout's diagnosis, $D_S$, is statistically independent
+from the diagnosis of her talented research associate
+Neville Longbottom, $D_L$, meaning that for any given
+state of nature $M$ or $-M$, Longbottom’s diagnosis does
+not depend on Sprout’s. 
+
+
+Further suppose that both Sprout
+and Longbottom return the mutant diagnosis (and for simplicity
+we also assume Longbottom's spells are equally as
+accurate as Sprout’s). 
+
+]
+
+.pull-right[
+<center>
+<img src="images/Longbottom.jpg" style="width:70%">
+</center>
+]
+
+
+---
+
+### Example 2: "The happy herbologist" continued
+
+To find the posterior probability the
+plant is a mutant after two independent mutant diagnoses,
+$P(M|D_S,D_L)$, Trelawney can apply a fundamental principle
+in Bayesian inference: Yesterday’s posterior is today’s
+prior (Lindley, 2000).
+
+Since we take diagnosis $D_S$ and diagnosis $D_L$ as conditionally
+independent, we know that 
+
+$$P(D_L|M,D_S) = P(D_L|M)  \qquad \mbox{and} \qquad  P(D_L|-M,D_S) = P(D_L|-M),$$ 
+
+giving
+
+\begin{align}
+P(M|D_S,D_L) 
+& = \frac{P(M|D_S)P(D_L|M)}{P(M|D_S)P(D_L|M) + P(-M|D_S)P (D_L|-M)} \\
+& = \frac{.047 × .99}{.047 × .99 + .953 × .02} \\
+& \approx .71,
+\end{align}
+
+where the probability the plant is a mutant prior to Longbottom’s
+diagnosis $D_L$, $P(M|D_S)$, is the probability it is
+a mutant posterior to Sprout’s diagnosis $D_S$.
+
+---
+
+### Example 2: "The happy herbologist" continued
+
+This illustrates the value of multiple independent sources of evidence:
+a plant that has twice been independently diagnosed as a
+mutant is quite likely to be one. 
+
+A third independent diagnosis would put the posterior probability over 99%. Note that,
+crucially, we would have obtained precisely the same final
+probability of .71 had we updated $P(M)$ to $P(M|D_S,D_L)$
+all at once. 
+
+This is easily confirmed when we consider the two diagnoses as a joint event, $\{ D_S,D_L\}$, and use the conditional probability 
+
+$$P(D_S,D_L|M) = P(D_S|M) × P(D_L|M)$$
+
+to update $P(M)$ to $P(M|D_S,D_L)$ in a single step.
+
+---
+
+class: segue
+
+
+.white[
+
+# Bayesian hypothesis testing with parameters
+
+]
+
+
+---
+
+### Bayesian hypothesis testing with parameters
+
+So far we have not discussed how model parameters come into play.
+Suppose that $\theta$ is a model parameter
+
+All of the previous discussion needs to be altered slightly to account
+for model parameters using
+
+$$p(X|M) = \int p(\theta|M) p(X|\theta,M) d\theta$$
+and
+
+$$p(X|-M) = \int p(\theta|-M) p(X|\theta,-M) d\theta$$
+Then these expressions can be substituted into previous expressions to calculate 
+$P(M|X)$ and $P(-M|X)$.
+
+---
+
+### Bayesian hypothesis testing with parameters
+
+A special case is when one of the hypotheses correspond to a point null hypothesis, i.e.,
+
+$$H_0\colon M = \{\theta=\theta_0\} \qquad \mbox{vs} \qquad H_1\colon -M=\{\theta\ne\theta_0\}$$
+In this case 
+
+$$p(X|M) =   p(X|\theta_0,M)$$
+where the value under the null hypotheses $\theta_0$ is substituted for $\theta$.
+
+---
+
+class: segue
+
+
+.white[
+
+# Example 3:  Perfection of the puking pastille
+
+# (Bayesian hypothesis testing as model comparison)
+
+]
+
+
+---
+
+### Example 3:  Perfection of the puking pastille 
+
+.pull-left[
+
+In the secretive research and development laboratory of Weasley’s
+Wizarding Wheezes, George Weasley works to develop gag
+toys and prank foods for the entertainment of young witches
+and wizards. 
+
+In a recent project, Weasley is studying the
+effects of his store’s famous puking pastilles, which cause
+immediate vomiting when consumed. 
+
+The target audience
+is Hogwarts students who need an excuse to leave class and
+enjoy making terrible messes.
+
+]
+
+.pull-right[
+
+<center>
+<img src="images/George.gif" style="width:70%">
+</center>
+
+ 
+
+]
+
+---
+
+### Example 3:  Perfection of the puking pastille 
+
+.pull-left[
+
+Shortly after the pastilles hit Weasley’s store shelves,
+customers began to report that puking pastilles cause not
+one, but multiple "expulsion events." 
+
+To learn more about this unknown behaviour, George turns to his sister Ginny
+and together they decide to set up an exploratory study.
+
+From scattered customer reports, George believes the expulsion
+rate to be 3 events per hour, but
+he intends to collect data to determine the rate more precisely.
+
+At the start of this project, George has no distinct
+hypotheses to compare.
+
+]
+
+.pull-right[
+<center>
+<img src="images/Ginny.gif" style="width:70%">
+</center>
+]
+
+---
+
+### Example 3:  Perfection of the puking pastille 
+
+Since the data $x$ are counts of the number of expulsion
+events within an interval of time, Ginny decides that the
+appropriate model for the data (i.e., likelihood function) is a
+Poisson distribution:
+
+$$p(x|\lambda) = \frac{\exp(−\lambda) \lambda^x}{x!}$$
+
+
+with the $\lambda$ parameter representing the expected
+number of events within the time interval.
+
+A useful prior distribution for Poisson rates is the Gamma
+distribution which is conjugate:
+
+$$p(\lambda|a,b) = \frac{b^a}{\Gamma(a)} \lambda^{a-1}\exp(-\lambda b)$$
+A Gamma distribution has two
+parameters that determine its form, namely shape, $a>0$ and
+scale, $b>0$.
+
+
+---
+
+### Example 3:  Perfection of the puking pastille 
+
+
+Before collecting further data, the Weasleys make sure to
+specify what they believe to be reasonable values based on
+the reports George has heard. 
+
+ 
+Ginny set the prior parameters to $a = 2$ and $b = 0.2$ by
+drawing the shape of the distribution for many parameter
+combinations and selecting a curve that closely resembles
+George’s prior information.
+
+Since George's prior hypothesis is that there are 3 events per hour
+
+$$H_0 \colon \lambda = 3 \qquad  \mbox{vs} \qquad H_1\colon\lambda\ne 3$$
+and he has no idea whether $H_0$ or $H_1$ is actually true so
+
+$$P(M) = 1/2 \qquad \mbox{and} \qquad P(-M) = 1/2$$
+
+
+Five volunteers are easily found, administered one puking
+pastille each, and monitored for 1 hour. The observed event
+frequencies are $x_1 = 5$, $x_2 = 9$, and $x_3 = 4$, $x_4=5$, $x_5=6$.
+---
+
+### Example 3:  Perfection of the puking pastille 
+
+Let ${\bf x} = (x_1,\ldots,x_5)$, $n=5$ and $s=\sum_{i=1}^n x_i = 29$.
+
+The (conditional) likelihood under $H_0$ is
+
+$$p({\bf x}|\lambda_0,H_0)=\prod_{i=1}^n \frac{\exp(−\lambda_0) \lambda^{x_i}}{x_i!} = \frac{\exp(-n\lambda_0) \lambda_0^s}{\prod_{i=1}^n x_i!}$$
+
+The (conditional) likelihood under $H_1$ is
+
+$$p({\bf x}|\lambda,H_1)=\prod_{i=1}^n \frac{\exp(−\lambda) \lambda^{x_i}}{x_i!} = \frac{\exp(-n\lambda) \lambda^s}{\prod_{i=1}^n x_i!}$$
+
+---
+
+### Example 3:  Perfection of the puking pastille 
+
+The marginal likelihood under $H_1$ is obtained by multiplying the likelihood by the prior distribution and integrating out $\lambda$, i.e.,
+
+\begin{align}
+p({\bf x}|H_1)
+& = \int_0^\infty p({\bf x}|\lambda,H_1) p(\lambda|H_1) d\lambda \\
+& = \int_0^\infty  \left[ \frac{\exp(-n\lambda) \lambda^s}{\prod_{i=1}^n x_i!} \right] \left[\frac{b^a}{\Gamma(a)} \lambda^{a-1}\exp(-\lambda b)  \right] d\lambda \\
+& = \frac{b^a}{\Gamma(a)\prod_{i=1}^n x_i!}  \int_0^\infty   \exp(-(b+n)\lambda) \lambda^{a+s-1}   d\lambda
+\end{align}
+
+Now we know that 
+
+$$\int_0^\infty p(\lambda|a,b) d\lambda = \int_0^\infty \frac{b^a}{\Gamma(a)} \lambda^{a-1}\exp(-\lambda b) d\lambda = 1$$
+Hence, $\int_0^\infty  \lambda^{a-1}\exp(-\lambda b) d\lambda = \frac{\Gamma(a)}{b^a}.$
+
+---
+
+### Example 3:  Perfection of the puking pastille 
+
+From the last slide
+
+$$p({\bf x}|H_1) = \frac{b^a}{\Gamma(a)\prod_{i=1}^n x_i!}  \int_0^\infty   \exp(-(b+n)\lambda) \lambda^{a+s-1}   d\lambda$$
+
+and 
+
+$$\int_0^\infty  \lambda^{a-1}\exp(-\lambda b) d\lambda = \frac{\Gamma(a)}{b^a}$$
+
+Hence,
+
+$$p({\bf x}|H_1) = \frac{b^a}{\Gamma(a)\prod_{i=1}^n x_i!} \frac{\Gamma(a+s)}{(b+n)^{a+s}}$$
+
+---
+
+### Example 3:  Perfection of the puking pastille 
+
+.pull-left-2[
+The posterior distribution under $H_1$ is
+
+\begin{align}
+p(\lambda|{\bf x},H_1) 
+& = \frac{p({\bf x}|\lambda,H_1) p(\lambda|H_1)}{p({\bf x}|H_1)} \\
+& = \frac{
+  \frac{b^a}{\Gamma(a)\prod_{i=1}^n x_i!}\exp(-(b+n)\lambda) \lambda^{a+s-1}
+}{
+  \frac{b^a}{\Gamma(a)\prod_{i=1}^n x_i!}\frac{\Gamma(a+s)}{(b+n)^{a+s}}
+} \\
+& = \frac{\Gamma(a+s)}{(b+n)^{a+s}}\exp(-(b+n)\lambda)\lambda^{a+s-1}
+\end{align}
+
+That is
+
+$$\lambda|{\bf x},H_1  \sim \mbox{Gamma}(a+s,b+n)$$
+When $a=2$, $b=0.2$, $n=5$ and $s=29$ we have
+
+$$\lambda|{\bf x},H_1  \sim \mbox{Gamma}(31,5.2)$$
+
+]
+
+.pull-right-1[
+
+```{r, eval=TRUE, echo=FALSE, fig.width=5, fig.height=6}
+x <- c(5, 9, 4, 5, 6)
+n <- length(x)
+s <- sum(x)
+
+xg <- seq(0,30,,100)
+ 
+a <- 2
+b <- 0.2
+
+f_prior <- dgamma(xg,a,b)
+f_like  <- dgamma(xg,s,n)
+f_post  <- dgamma(xg,a+s,b+n)
+
+dat1 <- cbind(xg,f_prior,1)
+dat2 <- cbind(xg,f_like,2)
+dat3 <- cbind(xg,f_post,3)
+dat <- rbind(dat1,dat2,dat3)
+
+colnames(dat) <- c("x","y","density")
+df <- data.frame(dat)
+df[,3] <- factor(df[,3],levels=c(1,2,3),labels=c("prior","likelihood","posterior"))
+
+g <- ggplot(df,aes(x=x,y=y,color=density)) +
+  geom_line(size=1.5) +
+  theme_bw(base_size = 22) +
+  theme(legend.position="bottom", legend.direction="vertical") +
+  coord_cartesian(xlim = c(0,30)) +
+  labs(x='x',y='density', title = "Bayesian inference") 
+g
+```
+
+]
+
+---
+
+
+### Example 3:  Perfection of the puking pastille 
+
+.pull-left[
+```{r, fig.show='hide', echo=TRUE}
+library(rethinking)
+
+set.seed(1)
+lambda_true <- 5
+n <- 5
+x <- c(5, 9, 4, 5, 6) #rpois(n,lambda_true)   
+s <- sum(x)
+a <- 2
+b <- 0.2
+lambda0 <- 3
+
+log_p_H0 <- sum(dpois(x,lambda0,log=TRUE))
+
+map_formula <- alist(
+  x ~ dpois(lambda),
+  lambda ~ dgamma(a,b)
+)
+ 
+df <- data.frame(x=x,a=a,b=b)
+
+res <- map( map_formula , 
+            data=df, 
+            start=list(lambda=5))
+```
+]
+
+.pull-right[
+
+```{r}
+precis(res, prob=0.95, digits=3)
+
+qgamma(c(0.025,0.975),a+s,b+n)
+```
+]
+
+---
+
+
+### Example 3:  Perfection of the puking pastille 
+
+The posterior odds is
+
+\begin{align}
+\frac{P(M|X)}{P(-M|X)}
+& = \frac{P(M)}{P(-M)} \times \frac{P(X|M)}{P(X|-M)} \\
+& = \frac{1/2}{1/2} \times \frac{\frac{\exp(-n\lambda_0) \lambda_0^s}{\prod_{i=1}^n x_i!}}{\frac{b^a}{\Gamma(a)\prod_{i=1}^n x_i!} \frac{\Gamma(a+s)}{(b+n)^{a+s}}} \\
+& = \frac{\exp(-n\lambda_0) \lambda_0^s}{\frac{b^a}{\Gamma(a)} \frac{\Gamma(a+s)}{(b+n)^{a+s}}} \\
+& = \exp\left[ -n\lambda_0 + s\log(\lambda_0) - a\log(b) + \log\Gamma(a) - \log\Gamma(a+s) + (a+s)\log(b+n) \right]
+\end{align}
+
+When $n=5$, $\lambda_0=3$, $s=29$, $a=2$, and $b=0.2$ we have
+
+$$\frac{P(M|X)}{P(-M|X)} = \exp(-3.471187) = 0.03108012$$
+which is very strong evidence against the null $32:1$ in favour of $H_1$.
+
+---
+
+### Example 3:  Perfection of the puking pastille 
+
+.pull-left[
+```{r, fig.show='hide', echo=TRUE}
+
+lambda_est <- coef(res)
+
+T1 <- logLik(res)
+T2 <- dgamma(lambda_est,a,b,log=TRUE)
+T3  <- 0.5*log(2*pi*vcov(res))
+log_p_H1 <- T1 + T2 + T3
+
+BF <- exp(log_p_H0 - log_p_H1)
+BF
+```
+]
+
+.pull-right[
+
+```{r}
+T0 <- -n*lambda0 + s*log(lambda0)
+T1 <- a*log(b) 
+T1 <- T1 - lgamma(a) 
+T1 <- T1 + lgamma(a+s) 
+T1 <- T1 - (a+s)*log(b+n)
+
+BF_exact <- exp(T0 - T1)
+BF_exact
+``` 
+
+]
+
+---
+
+class: segue
+
+.white[
+
+# Example 4:  The measure of an elf
+
+# (Testing non-standard hypotheses)
+
+]
+
+---
+
+### Example 4:  The measure of an elf
+
+.pull-left[
+
+In the wizarding
+world, the Ministry of Magic distinguishes between
+two types of living creatures. 
+
+Beings, such as witches,
+wizards, and vampires, are creatures who have the intelligence
+needed to understand laws and function in a peaceful
+society. 
+
+By contrast, Beasts are creatures such as trolls,
+dragons, and grindylows, which do not have that capacity.
+
+Recently, the classification of house-elves has become a
+matter of contention. 
+]
+
+.pull-right[
+<center>
+<img src="images/elf.gif" style="width:70%">
+</center>
+]
+
+
+---
+
+### Example 4:  The measure of an elf
+
+.pull-left[
+On one side of the debate is the  
+wizard Professor Severus Snape, who
+claims that house-elves are so far beneath wizard intelligence
+that they should be classified as Beasts.
+
+<center>
+<img src="images/snape.gif" style="width:90%">
+</center>
+]
+
+
+.pull-left[
+On the other
+side is the famed Professor Dumbledore, who argues that elves are as intelligent as wizards
+and should be classified as Beings, with all the rights and
+responsibilities thereof. 
+
+
+<center>
+<img src="images/Dumble.gif" style="width:90%">
+</center>
+
+]
+
+---
+
+### Example 4:  The measure of an elf
+
+
+
+.pull-left[
+
+The Ministry of Magic decides to
+investigate and convene the Wizengamot’s Internal Subcommittee
+on House Elf Status (W.I.S.H.E.S.), an ad-hoc
+expert committee. 
+
+W.I.S.H.E.S. in turn calls on psychometrician
+Dr. Hermione Granger of the Magical Testing Service
+to decide whether house-elves are indeed as intelligent as
+wizards.
+
+]
+
+.pull-right[
+<center>
+<img src="images/Herm.gif" style="width:100%">
+</center>
+]
+
+---
+
+### Example 4:  The measure of an elf
+
+Dr. Granger begins her task by formalizing three basic
+hypotheses. 
+She will call the population’s average wizarding
+intelligence quotient (WIQ) $\mu_w$ for wizards and witches
+and $\mu_e$ for elves. She can now call the difference between
+the population means 
+
+$$\delta  = \mu_w − \mu_e$$ 
+
+so that $\delta$ captures how much more intelligent magical folk are. 
+Granger wishes see which of the hypotheses is most likely:
+
++ If wizards and elves are equally intelligent, $\delta = 0$, or $M_0$ 
++ If magical folk much more intelligent than elves $\delta>0$, or $M_+$
++ If elves much more intelligent than magical folk $\delta<0$, or $M_-$
+
+---
+
+### Example 4:  The measure of an elf
+
+From our previous slide 
+
+$$H_0 \colon \delta=0$$
+
+$$H_+ \colon \delta>0$$
+
+$$H_- \colon \delta<0$$
+
+However, it is not enough to state simply that $\delta < 0$ because
+as a model for data, it is underspecified: no quantitative predictions
+follow (i.e., the likelihood for a specific data set
+cannot be calculated). In order to be more specific, Dr. Granger
+consults with W.I.S.H.E.S. and together they decide on three
+concrete models
+
+$$p(\delta|H_0) = I(-5<\delta<5)/10$$
+
+$$p(\delta|H_+) = 2N(\delta|5, 15)I(\delta > 5)$$
+$$p(\delta|H_-) = 2N(\delta|-5, 15)I(\delta < -5)$$
+
+This is based on a consensus among
+W.I.S.H.E.S. that differences of only five WIQ points are
+negligible for the Ministry’s classification purposes.
+
+---
+
+### Example 4:  The measure of an elf
+
+After having determined the three hypotheses that
+W.I.S.H.E.S. wishes to consider, Dr. Granger decides to collect
+one more piece of information: how strongly each member
+of the committee believes in each of the three options. She
+provides each member with 100 tokens and three cups, and
+gives them the following instructions:
+
+> I would like you to distribute these 100 tokens over these three cups. The first cup represents $H_-$, the
+second $H_0$, and the third $H_+$. You should distribute them proportionally to how strongly you believe in
+each hypothesis.
+
+Dumbledore inferred prior probabilities of each of the three
+hypotheses are $(25, 50, 25)$, Granger’s are $(15, 70, 15)$,
+and Snapes's are $(5, 15, 80)$. This type of procedure is
+known as **prior elicitation**.
+
+---
+
+### Example 4:  The measure of an elf
+
+Using the prior elicitation from the previous slide 
+Dumbledore
+
+$$P(H_-) = 0.25, \qquad P(H_0) = 0.5, \quad \mbox{and} \quad P(H_+)=0.25$$
+
+for Granger
+
+$$P(H_-) = 0.15, \qquad P(H_0) = 0.7, \quad \mbox{and} \quad P(H_+)=0.15$$
+and for Snape
+
+$$P(H_-) = 0.5, \qquad P(H_0) = 0.15, \quad \mbox{and} \quad P(H_+)=0.80$$
+In Bayesian hypothesis testing sometimes multiple priors are elicited 
+to determine the sensitivity of the procedure to the choice of priors.
+
+---
+
+### Example 4:  The measure of an elf
+
+To summarize the different prior expectations, Granger
+constructs a figure to display the marginal distribution of
+the effect size $\delta$ for each committee member. This marginal
+prior density is easily obtained with the sum rule:
+
+$$p(\delta) = p(\delta|H_0)p(H_0) + p(\delta|H_+)p(H_+) + p(\delta|H_-)p(H_-)$$
+
+
+---
+
+### Example 4:  The measure of an elf
+
+.pull-left[
+Using a well-calibrated test, Bones sets out to gather a
+sample of $n_1 = 100$ magical folk and $n_2 = 100$ house-elves,
+and obtains WIQ scores of $M_w = 99.00$ for wizards
+and witches and $M_e = 101.00$ for elves, giving a sample
+difference of 
+
+$$d = −2.00.$$ 
+
+The test is calibrated such that the standard deviation for magical 
+folk and elves are both equal to 15: $\sigma_w = \sigma_e = 15.00$, 
+which in turn gives a standard deviation for their difference 
+$\delta$ to be 
+
+$$\sigma_\delta = \sqrt{15^2 + 15^2} \approx 21.21$$
+]
+
+.pull-right[
+Therefore, the standard error of measurement is 
+
+$$\mbox{se} = \frac{21.21}{\sqrt{n_1 + n_2}} \approx 1.5$$
+
+and so our likelihood function is
+
+$$d|\delta \sim N(\delta,\mbox{se}^2)$$
+
+with $d=-2$ being the observed mean for $d$.
+
+]
+
+---
+
+### Example 4:  The measure of an elf
+
+To address the committee’s question, Granger can now 
+to obtain the posterior probability of each model:
+
+$$p(H|d) = \frac{p(H)p(d|H)}{p(H_0)p(d|H_0) + p(H_+)p(d|H_+) + p(H_-)p(d|H_-)}$$
+
+where 
+
+$$p(d|H) = \int p(d|\delta,H)p(\delta|H) d\delta$$
+
+and $H \in \{ H_0, H_+, H_- \}$. This involves three integrals...
+
+
+---
+
+### Example 4:  The measure of an elf
+
+The first of these integrals is
+
+\begin{align}
+p(d|M_0)
+& = \int p(d|\delta,M_0)p(\delta|M_0) d\delta \\
+& = \int_{-\infty}^\infty \phi(-2; \delta, \mbox{se}^2) \frac{I(-5 < \delta < 5)}{10} d\delta \\
+& = \int_{-5}^5  \frac{\phi(-2; \delta, \mbox{se}^2)}{10} d\delta \\
+& = \frac{1}{10}\left[ \Phi(2|-5,1.52) − \Phi(2|5,1.52) \right] \\
+& \approx 9.772 \times 10^{−2}
+\end{align}
+
+Similarly, Granger performs a simple numerical
+integration spell to calculate
+
+$$p(d|M_+) \approx 8.139 \times 10^{−8}$$
+
+and
+
+$$p(d|M_-) \approx 1.209\times 10^{−3}.$$
+
+---
+
+.pull-left[
+```{r}
+# R code for Example 4
+
+# Define the three models
+e <-  5
+s <- 15
+
+h0 <- function(x) (x<e & x>-e)/(2*e)
+hn <- function(x) dnorm(x,-e,s)*2*(x< -e)
+hp <- function(x) dnorm(x, e,s)*2*(x>  e)
+
+# Define the data and likelihood
+d   <-  -2
+n   <- 100
+sem <- sqrt((s^2 + s^2) / (2 * n))
+
+like <- function(x) dnorm(d, x, sem)
+
+# Define the integrands and integrate
+fn <- function(x) like(x) * hn(x)
+mn <- integrate(fn, -Inf, -e)$value
+
+f0 <- function(x) like(x) * h0(x)
+m0 <- integrate(f0, -e, e)$value
+
+fp <- function(x) like(x) * hp(x)
+mp <- integrate(fp, e, Inf)$value
+
+ev <- c(mn, m0, mp)
+```
+]
+
+.pull-right[
+
+```{r}
+# Apply Bayes' rule
+normalizeProbs <- function(p,m) p*m / sum(p*m)
+
+dumbledore <- c(.25, .50, .25)
+granger    <- c(.15, .70, .15)
+snape     <- c(.10, .10, .80)
+
+round(100*normalizeProbs(dumbledore, ev),1)
+round(100*normalizeProbs(granger, ev),1)
+round(100*normalizeProbs(snape, ev),1)
+```
+]
+
+
+---
+
+### Example 4:  The measure of an elf
+
+Dr. Granger now has all that she needs to compute the posterior
+probabilities of each hypothesis and for each committee
+member. The prior and posterior probabilities are given in
+the table below
+
+
+${}$ | Dumbledore | Granger | Snape
+---|---|---|---|---
+$P(H_−)$ | 0.25 | 0.15 | 0.05
+$P(H_0)$ | 0.50 | 0.70 | 0.15
+$P(H_+)$ | 0.25 | 0.15 | 0.80
+$P(Being)$ | 0.75 | 0.85 | 0.20
+$P(H_−\vert d)$ | .006 | .003 | .012
+$P(H_0\vert d)$ | .994 | .997 | .988
+$P(H_+\vert d)$ | .000 | .000 | .000
+$P(Being \vert d)$ | 1.000 | 1.000 | 1.000
+
+---
+
+### Example 4:  The measure of an elf
+
+ 
+
+As it turns out, the data that Dr Granger has available
+should effectively overwhelm each of the three members'
+prior probabilities and put the bulk of the posterior probability
+on $H_0$ for each member. 
+
+Counting on the ability of
+each committee member to rationally update their beliefs,
+she prepares a concise presentation in which she lays out a
+confident case for elf equality and "Being" status.
+
+ 
+<center>
+<img src="images/celebrate.gif" style="width:80%">
+</center>
+
+
+---
+
+# `r set.seed(2019); emo::ji("technologist")` Made by a human with a computer
+
+
+###  These slides were adapted using examples from "Introduction to Bayesian Inference for Psychology" by Alexander Etz and Joachim Vandekerckhove, Psychonomic Bulletin and Review (2018) 25:5-34
+
+  
+
+
+### Created using [R Markdown](https://rmarkdown.rstudio.com) with flair by [**xaringan**](https://github.com/yihui/xaringan)
+
+<br> 
+
+<a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+ 
+
